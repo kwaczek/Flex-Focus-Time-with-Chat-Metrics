@@ -10,12 +10,12 @@ Flex plugin to measure focus time and additional metrics for chat related channe
 
 Focus Time is a metric that measures time spent on each reservation. In a multi-tasking scenario where an Agent is working 
 multiple interactions at the same time, this plugin will track the "in focus" time for each task instead of just the task duration. 
-The logging stops as soon as the task enters the Wrapup state. Unlike in https://github.com/lehel-twilio/plugin-handleTimeTracker, this plugin is using
-browser local storage, so it's resilient against browser refreshes.
+The logging stops as soon as the task enters the Wrapup state. Unlike in https://github.com/lehel-twilio/plugin-handleTimeTracker, this plugin uses
+browser local storage, therefor, it's resilient against browser refreshes.
 
 ![alt text](readme_images/multiple_reservaitions.png)
 
-The focus time is calculated for all channels and by default, the **conversation_measure_1** is used for Flex Insights.
+The focus time is calculated for all channels and, by default, the **conversation_measure_1** is used for Flex Insights.
    
 # Additional Chat Metrics
 
@@ -49,4 +49,5 @@ Together with the Focus Time, there are additional metrics that can be enabled f
 * average number of characters in customer's messages
 * if there is transfer or longlived channels configured then the function needs to be enhanced to exclude other agent(s) too
 
+# Configuration
 
