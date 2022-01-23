@@ -1,6 +1,6 @@
 # Flex Focus Time with Chat Metrics
 
-!(readme_images/chat_insights.png)
+![chat insights](readme_images/chat_insights.png)
 
 # Overview
 
@@ -13,7 +13,7 @@ multiple interactions at the same time, this plugin will track the "in focus" ti
 The logging stops as soon as the task enters the Wrapup state. Unlike in https://github.com/lehel-twilio/plugin-handleTimeTracker, this plugin uses
 browser local storage, therefore, it's resilient against browser refreshes.
 
-!(readme_images/multiple_reservaitions.png)
+![flex reservations](readme_images/multiple_reservaitions.png)
 
 The focus time is calculated for all channels and, by default, the **conversation_measure_1** is used for Flex Insights.
    
@@ -50,4 +50,18 @@ Together with the Focus Time, there are additional metrics that can be enabled f
 * if there is transfer or longlived channels configured then the function needs to be enhanced to exclude other agent(s) too
 
 # Configuration
+
+### Step 1. Deploy the Twilio Serverless Service
+
+1. Set the environment variables (.env) 
+```
+ACCOUNT_SID=
+AUTH_TOKEN=
+TWILIO_CHAT_SERVICE=
+```
+
+2. Deploy the serverless project using Twilio Cli:  
+```
+twilio serverless:deploy
+```
 
