@@ -1,10 +1,15 @@
-//// config
-const FOCUSTIMEATTRIBUTE = 'conversation_measure_1'
+// configure where the focus time is stored
+const FOCUSTIMEATTRIBUTE = 'focus_time'
 
-const RUNTIMEDOMAIN = "http://localhost:3000" //configure domain for the serverless function
+// configure domain for the serverless function
+const RUNTIMEDOMAIN = "https://flex-insights-service-xxx-dev.twil.io"
 
-const CHANNELS = ['chat'] //list all channels for additional metrics (first response time, average response time ...)
+// list all chat-like channels for the additional metrics (first response time, average response time ...)
+const CHANNELS = ['chat'] 
 
+// enable or disable additional features for chat-like channels
+// if enable then pick metric attribute from the Twilio documenttion - https://www.twilio.com/docs/flex/developer/insights/enhance-integration#add-custom-attributes-and-measures
+// if disable then use null (ie. agentMessages: null)
 const FEATURES = {
     firstAgentResponse : 'first_response_time',
     averageResponseTime: 'average_response_time',
@@ -13,6 +18,8 @@ const FEATURES = {
     averageAgentLength: 'conversation_measure_4',
     averageCustomerLength: 'conversation_measure_6'
 }
+
+// configuration done
 
 export const getConfig = () => {
     let configuredFeatures = ''

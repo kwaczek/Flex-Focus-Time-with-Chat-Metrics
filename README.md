@@ -15,7 +15,7 @@ browser local storage, therefore, it's resilient against browser refreshes.
 
 ![flex reservations](readme_images/multiple_reservaitions.png)
 
-The focus time is calculated for all channels and, by default, the **conversation_measure_1** is used for Flex Insights.
+The focus time is calculated for all channels and, by default, the **focus_time** attribute is used and recommended for Flex Insights.
    
 # Additional Chat Metrics
 
@@ -69,7 +69,7 @@ twilio serverless:deploy
 
 1. Set variables in /src/config.js
 ```
-const FOCUSTIMEATTRIBUTE = 'conversation_measure_1' 
+const FOCUSTIMEATTRIBUTE = 'focus_time' 
 
 const RUNTIMEDOMAIN = "https://flex-insights-service-xxx-dev.twil.io" //configure domain for the serverless function
 
@@ -85,7 +85,7 @@ const FEATURES = {
 }
 ```
 
-* see available Flex Insights metric attributes in [Twilio Documentation](https://flex-insights-service-1588-dev.twil.io)
+* see available Flex Insights metric attributes in [Twilio Documentation](https://www.twilio.com/docs/flex/developer/insights/enhance-integration#add-custom-attributes-and-measures) (metrics has number as the value)
 * if you do not want to use any feature then configure value to 'null'
 * example on enabled just chosen features
 
