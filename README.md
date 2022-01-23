@@ -51,7 +51,7 @@ Together with the Focus Time, there are additional metrics that can be enabled f
 
 # Configuration
 
-### Step 1. Deploy the Twilio Serverless Service
+### Deploy the Twilio Serverless Service
 
 1. Set the environment variables (.env) 
 ```
@@ -65,3 +65,37 @@ TWILIO_CHAT_SERVICE=
 twilio serverless:deploy
 ```
 
+### Configure and Deploy the Plugin
+
+1. Set variables in /src/config.js
+```
+const FOCUSTIMEATTRIBUTE = 'conversation_measure_1' 
+
+const RUNTIMEDOMAIN = "https://flex-insights-service-xxx-dev.twil.io" //configure domain for the serverless function
+
+const CHANNELS = ['chat'] //list all channels for additional metrics (first response time, average response time ...)
+
+const FEATURES = {
+    firstAgentResponse : 'first_response_time',
+    averageResponseTime: 'average_response_time',
+    agentMessages: 'conversation_measure_2',
+    customerMessages: 'conversation_measure_3',
+    averageAgentLength: 'conversation_measure_4',
+    averageCustomerLength: 'conversation_measure_6'
+}
+```
+
+* see available Flex Insights metric attributes in [Twilio Documentation](https://flex-insights-service-1588-dev.twil.io)
+* if you do not want to use any feature then configure value to 'null'
+* example on enabled just chosen features
+
+```const FEATURES = {
+    firstAgentResponse : 'first_response_time',
+    averageResponseTime: 'average_response_time',
+    agentMessages: null,
+    customerMessages: 'conversation_measure_3',
+    averageAgentLength: null,
+    averageCustomerLength: null
+}
+```
+2. Deploy and Release the Plugin
