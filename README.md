@@ -87,7 +87,7 @@ const FEATURES = {
 
 * see available Flex Insights metric attributes in [Twilio Documentation](https://www.twilio.com/docs/flex/developer/insights/enhance-integration#add-custom-attributes-and-measures) (metrics has number as the value)
 * if you do not want to use any feature then configure value to 'null'
-* example on enabled just chosen features
+* an example of disabling features 
 
 ```const FEATURES = {
     firstAgentResponse : 'first_response_time',
