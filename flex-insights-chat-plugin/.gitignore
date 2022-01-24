@@ -65,5 +65,3 @@ appConfig.js
 pluginsService.js
 build/
 
-# plugin related ignore
-src/config.js
