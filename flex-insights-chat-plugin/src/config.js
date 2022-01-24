@@ -2,7 +2,7 @@
 const FOCUSTIMEATTRIBUTE = 'focus_time'
 
 // configure domain for the serverless function
-const RUNTIMEDOMAIN = "https://flex-insights-service-1588-dev.twil.io"
+const RUNTIMEDOMAIN = "https://flex-insights-service-1588test-dev.twil.io"
 
 // list all chat-like channels for the additional metrics (first response time, average response time ...)
 const CHANNELS = ['chat'] 
