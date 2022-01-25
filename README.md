@@ -102,7 +102,7 @@ const FEATURES = {
 ```
 2. Deploy and Release the Plugin
 
-### Add More Metrics
+# Expand the Plugin
 
 * this plugin is easy to expand with your own calculations on chat-like channels transcripts
 * if you want to know for example, how many times your agent or customer mentioned your product X then only two steps are required
