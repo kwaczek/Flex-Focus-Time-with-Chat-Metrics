@@ -33,8 +33,6 @@ exports.handler = async function (context, event, callback) {
     const configuredFeatures = event.configuredFeatures
     const chatService = context.TWILIO_CHAT_SERVICE;
 
-    console.log("agent mess", configuredFeatures['agentMessages']);
-    console.log("conf", configuredFeatures);
     response.body = {}
 
     client.chat.services(chatService)

@@ -88,7 +88,6 @@ export const handleOnBeforeCompleteTask = async (payload, manager) => {
 export const getMetrics = async (payload, store) => {
     const channelName = payload.task.taskChannelUniqueName
     const configuredFeatures = getConfig()
-    console.log("sadsada", Object.keys(configuredFeatures).length)
     if (CHANNELS.includes(channelName) && Object.keys(configuredFeatures).length > 0) {
         const additionalMetrics = await getAdditionalMetrics(payload, store);
         return additionalMetrics
@@ -100,24 +99,19 @@ export const getMetrics = async (payload, store) => {
 }
 
 export const writeHandleTime = async (payload, store) => {
-    //const configuredFeatures = getConfig()
-
     const taskSid = payload.task.reservationSid ? payload.task.reservationSid : payload.task.sid;
 
     const taskInWindowStore = window.handleTimeTracker.reservations[taskSid];
     const handleTime = taskInWindowStore.handleTime || 0;
 
     const additionalMetrics = await getMetrics(payload, store);
-    console.log('aaaa', additionalMetrics);
 
     const newMetrics = {}
 
     newMetrics[FOCUSTIMEATTRIBUTE] = handleTime;
 
     const keys = Object.keys(additionalMetrics)
-    console.log(keys);
     keys.forEach( key => {
-        console.log(key);
         return newMetrics[FEATURES[key]] = additionalMetrics[key] 
     })
 
