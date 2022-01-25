@@ -4,7 +4,7 @@
 
 # Overview
 
-Flex plugin to measure focus time and additional metrics for chat related channels. All metrics are sent via taskrouter to Flex Insights.
+Flex plugin to measure focus time and additional metrics for chat related channels. All metrics are sent via taskrouter to Flex Insights. This plugin is easy to expand to get even more metrics from chat channels.
 
 # Focus Time
 
@@ -68,6 +68,7 @@ twilio serverless:deploy
 ### Configure and Deploy the Plugin
 
 1. Set variables in /src/config.js
+* rename **config.sample.js** to **config.js**
 ```
 const FOCUSTIMEATTRIBUTE = 'focus_time' 
 
@@ -100,3 +101,34 @@ const FEATURES = {
 }
 ```
 2. Deploy and Release the Plugin
+
+### Add More Metrics
+
+* this plugin is easy to expand with your own calculations on chat-like channels transcripts
+* if you want to know for example, how many times your agent or customer mentioned your product X then only two steps are required
+
+1. add a new configuration item together with the metric attribute to be useed in Flex Insights into **FEATURES** object
+```
+const FEATURES = {
+    firstAgentResponse : 'first_response_time',
+    averageResponseTime: 'average_response_time',
+    agentMessages: null,
+    customerMessages: 'conversation_measure_3',
+    averageAgentLength: null,
+    averageCustomerLength: null,
+    productMentioned: 'conversation_measure_4'
+}
+```
+
+2. add the code to the function (with condition that check the FEATURES key)
+```
+    // custom product mentioned 
+    if (configuredFeatures['productMentioned']) {
+    //code
+    const productMentioned = 10
+    response.body['productMentioned'] = productMentioned
+    }
+```
+
+* with these two steps you get your new metric into taskrouter task => Flex Insights
+* please note that there is a limited amount empty metric attributes to be used in [Flex Insights](https://www.twilio.com/docs/flex/developer/insights/enhance-integration#add-custom-attributes-and-measures)

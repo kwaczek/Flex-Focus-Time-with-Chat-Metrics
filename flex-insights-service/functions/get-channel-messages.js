@@ -1,18 +1,7 @@
-const axios = require('axios');
+const TokenValidator = require('twilio-flex-token-validator').validator;
 
 exports.handler = async function (context, event, callback) {
-  const validateToken = async (token, accountSid, authToken) => {
-    try {
-      return await axios.post(
-        `https://iam.twilio.com/v1/Accounts/${accountSid}/Tokens/validate`,
-        { token: token },
-        { auth: { username: accountSid, password: authToken } }
-      );
-    } catch (e) {
-      console.error("failed to validate token", e.response.data);
-      throw e;
-    }
-  };
+
 
   const response = new Twilio.Response();
   response.appendHeader('Access-Control-Allow-Origin', '*');
@@ -21,98 +10,118 @@ exports.handler = async function (context, event, callback) {
   response.appendHeader('Access-Control-Allow-Headers', 'Content-Type');
   let client = context.getTwilioClient();
 
-  const authed = await validateToken(event.token, context.ACCOUNT_SID, context.AUTH_TOKEN);
-  if (typeof authed !== 'object' || !authed.data || authed.data.valid !== true) {
-    console.log('couldn\'t auth', event.Token);
-    return callback(null, response);
-  }
+  try {
+    const flexToken = event.token;
+    if (flexToken == null) {
+      response.setStatusCode(400);
+      response.setBody("<h1>token is required</h1>");
+      return callback(null, response);
+    }
 
-  const workerName = event.workerName
-  const dateAccepted = event.reservationAccepted
-  const channelSid = event.channelSid
-  const configuredFeatures = event.configuredFeatures
-  const chatService = context.TWILIO_CHAT_SERVICE;
 
-  response.body = new Array(configuredFeatures.length);
 
-  client.chat.services(chatService)
-    .channels(channelSid)
-    .messages
-    .list()
-    .then(messages => {
-      // agent first reply
-      if (configuredFeatures[0] == '1') {
-        const agentFirstResponse = messages.find(m => m.from === workerName);
-        let firstAgentMessageDuration = 0;
+    const tokenResult = await TokenValidator(flexToken, context.ACCOUNT_SID, context.AUTH_TOKEN).catch(e => { console.error(e); return null });
+    if (tokenResult == null) {
+      response.setStatusCode(400);
+      response.setBody("<h1>ssoToken is invalid</h1>");
+      return callback(null, response);
+    }
 
-        if (agentFirstResponse) {
-          const agentFirstResponseTimeUTC = new Date(new Date(agentFirstResponse.dateCreated).toISOString());
-          const dateAcceptedUTC = new Date(dateAccepted);
-          firstAgentMessageDuration = (agentFirstResponseTimeUTC - dateAcceptedUTC) / 1000;
-          response.body[0] = firstAgentMessageDuration
-        }
-      }
+    const workerName = event.workerName
+    const dateAccepted = event.reservationAccepted
+    const channelSid = event.channelSid
+    const configuredFeatures = event.configuredFeatures
+    const chatService = context.TWILIO_CHAT_SERVICE;
 
-      // average message time
-      if (configuredFeatures[1] == '1') {
-        let durations = []
+    console.log("agent mess", configuredFeatures['agentMessages']);
+    console.log("conf", configuredFeatures);
+    response.body = {}
 
-        for (let i = 0; i < messages.length; i++) {
-          if (i > 0) {
-            if (messages[i].from === workerName && messages[i].from !== messages[i - 1].from) {
-              durations.push((new Date(messages[i].dateCreated) - new Date(messages[i - 1].dateCreated)) / 1000)
-            }
+    client.chat.services(chatService)
+      .channels(channelSid)
+      .messages
+      .list()
+      .then(messages => {
+        // agent first reply
+        if (configuredFeatures['firstAgentResponse']) {
+          const agentFirstResponse = messages.find(m => m.from === workerName);
+          let firstAgentMessageDuration = 0;
+
+          if (agentFirstResponse) {
+            const agentFirstResponseTimeUTC = new Date(new Date(agentFirstResponse.dateCreated).toISOString());
+            const dateAcceptedUTC = new Date(dateAccepted);
+            firstAgentMessageDuration = (agentFirstResponseTimeUTC - dateAcceptedUTC) / 1000;
+            response.body['firstAgentResponse'] = firstAgentMessageDuration
           }
         }
-        durations.shift() // exclude first agent response
-        const averageTime = (durations.length > 0) ? durations.reduce((a, b) => a + b, 0) / durations.length : null
-        response.body[1] = averageTime
-      }
 
-      // agent message count
-      if (configuredFeatures[2] == '1') {
-        const agentMessages = messages.filter(({ from }) => from === workerName).length
-        response.body[2] = agentMessages
-      }
+        // average message time
+        if (configuredFeatures['averageResponseTime']) {
+          let durations = []
 
-      // customer message count
-      if (configuredFeatures[3] == '1') {
-        const customerMessages = messages.filter(({ from }) => from != workerName).length
-        response.body[3] = customerMessages
-      }
-
-      // agent average length
-      if (configuredFeatures[4] == '1') {
-        const agentMessages = messages.filter(({ from }) => from === workerName).length
-        let totalLength = 0
-
-        for (let i = 0; i < messages.length; i++) {
-          (messages[i].from === workerName) ? totalLength += messages[i].body.length : null
+          for (let i = 0; i < messages.length; i++) {
+            if (i > 0) {
+              if (messages[i].from === workerName && messages[i].from !== messages[i - 1].from) {
+                durations.push((new Date(messages[i].dateCreated) - new Date(messages[i - 1].dateCreated)) / 1000)
+              }
+            }
+          }
+          durations.shift() // exclude first agent response
+          const averageTime = (durations.length > 0) ? durations.reduce((a, b) => a + b, 0) / durations.length : null
+          response.body['averageResponseTime'] = averageTime
         }
 
-        const averageAgentLength = totalLength / agentMessages
-        response.body[4] = averageAgentLength
-      }
-
-      // customer average lenght
-      if (configuredFeatures[5] == '1') {
-        const customerMessages = messages.filter(({ from }) => from != workerName).length
-        let totalLength = 0
-
-        for (let i = 0; i < messages.length; i++) {
-          (messages[i].from != workerName) ? totalLength += messages[i].body.length : null
+        // agent message count
+        if (configuredFeatures['agentMessages']) {
+          const agentMessages = messages.filter(({ from }) => from === workerName).length
+          response.body['agentMessages'] = agentMessages
         }
 
-        const averageCustomerLength = totalLength / customerMessages
-        response.body[5] = averageCustomerLength
-      }
+        // customer message count
+        if (configuredFeatures['customerMessages']) {
+          const customerMessages = messages.filter(({ from }) => from != workerName).length
+          response.body['customerMessages'] = customerMessages
+        }
 
-      return response
-    }).then(response => {
-      callback(null, response)
-    }
-    )
-    .catch((error) => {
-      callback(error);
-    });;
+        // agent average length
+        if (configuredFeatures['averageAgentLength']) {
+          const agentMessages = messages.filter(({ from }) => from === workerName).length
+          let totalLength = 0
+
+          for (let i = 0; i < messages.length; i++) {
+            (messages[i].from === workerName) ? totalLength += messages[i].body.length : null
+          }
+
+          const averageAgentLength = totalLength / agentMessages
+          response.body['averageAgentLength'] = averageAgentLength
+        }
+
+        // customer average lenght
+        if (configuredFeatures['averageCustomerLength']) {
+          const customerMessages = messages.filter(({ from }) => from != workerName).length
+          let totalLength = 0
+
+          for (let i = 0; i < messages.length; i++) {
+            (messages[i].from != workerName) ? totalLength += messages[i].body.length : null
+          }
+
+          const averageCustomerLength = totalLength / customerMessages
+          response.body['averageCustomerLength'] = averageCustomerLength
+        }
+
+        console.log('response :>> ', response);
+        return response
+      }).then(response => {
+        callback(null, response)
+      }
+      )
+      .catch((error) => {
+        callback(error);
+      });;
+
+  } catch (e) {
+    response.setStatusCode(500);
+    response.setBody("<h1>Internal Server Error</h1>");
+    return callback(null, response);
+  }
 }

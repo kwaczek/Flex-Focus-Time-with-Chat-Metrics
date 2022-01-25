@@ -17,7 +17,7 @@ export const logHandleTime = (payload, store) => {
     //Only execute if a new task is selected, do nothinsg if the same task is selected again
     if (previousTaskSid !== currentTaskSid) {
         const existingReservations = window.handleTimeTracker.reservations;
- 
+
         let previousTaskSelectedTime = '';
         let previousTaskHandleTime = '';
 
@@ -88,8 +88,8 @@ export const handleOnBeforeCompleteTask = async (payload, manager) => {
 export const getMetrics = async (payload, store) => {
     const channelName = payload.task.taskChannelUniqueName
     const configuredFeatures = getConfig()
-
-    if (CHANNELS.includes(channelName) && configuredFeatures.includes('1')) {
+    console.log("sadsada", Object.keys(configuredFeatures).length)
+    if (CHANNELS.includes(channelName) && Object.keys(configuredFeatures).length > 0) {
         const additionalMetrics = await getAdditionalMetrics(payload, store);
         return additionalMetrics
     } else {
@@ -98,7 +98,7 @@ export const getMetrics = async (payload, store) => {
 }
 
 export const writeHandleTime = async (payload, store) => {
-    const configuredFeatures = getConfig()
+    //const configuredFeatures = getConfig()
 
     const taskSid = payload.task.reservationSid ? payload.task.reservationSid : payload.task.sid;
 
@@ -106,35 +106,21 @@ export const writeHandleTime = async (payload, store) => {
     const handleTime = taskInWindowStore.handleTime || 0;
 
     const additionalMetrics = await getMetrics(payload, store);
-    
-    let attributes = payload.task.attributes;
+    console.log('aaaa', additionalMetrics);
 
-    const keys = Object.keys(FEATURES)
+    const newMetrics = {}
 
-    if (typeof (attributes.conversations) !== 'undefined') {
-        attributes.conversations[FOCUSTIMEATTRIBUTE] = handleTime;
+    newMetrics[FOCUSTIMEATTRIBUTE] = handleTime;
 
-        
-        (configuredFeatures[0] == '1') ? attributes.conversations[FEATURES['firstAgentResponse']] = additionalMetrics[0] : null;
-        (configuredFeatures[1] == '1') ? attributes.conversations[FEATURES['averageResponseTime']] = additionalMetrics[1] : null;
-        (configuredFeatures[2] == '1') ? attributes.conversations[FEATURES['agentMessages']] = additionalMetrics[2] : null;
-        (configuredFeatures[3] == '1') ? attributes.conversations[FEATURES['customerMessages']] = additionalMetrics[3] : null;
-        (configuredFeatures[4] == '1') ? attributes.conversations[FEATURES['averageAgentLength']] = additionalMetrics[4] : null;
-        (configuredFeatures[5] == '1') ? attributes.conversations[FEATURES['averageCustomerLength']] = additionalMetrics[5] : null;
+    const keys = Object.keys(additionalMetrics)
+    console.log(keys);
+    keys.forEach( key => {
+        console.log(key);
+        return newMetrics[FEATURES[key]] = additionalMetrics[key] 
+    })
 
-    } else {
-        attributes.conversations = {
-            [FOCUSTIMEATTRIBUTE]: handleTime,
-            ... (configuredFeatures[0] == '1') && { [FEATURES['firstAgentResponse']]: additionalMetrics[0] },
-            ... (configuredFeatures[1] == '1') && { [FEATURES['averageResponseTime']]: additionalMetrics[1] },
-            ... (configuredFeatures[2] == '1') && { [FEATURES['agentMessages']]: additionalMetrics[2] },
-            ... (configuredFeatures[3] == '1') && { [FEATURES['customerMessages']]: additionalMetrics[3] },
-            ... (configuredFeatures[4] == '1') && { [FEATURES['averageAgentLength']]: additionalMetrics[4] },
-            ... (configuredFeatures[5] == '1') && { [FEATURES['averageCustomerLength']]: additionalMetrics[5] }
-        }
-    }
+    const newAttributes = {...payload.task.attributes, conversations: {...(payload.task.attributes.conversations || {}), ...newMetrics}}
+    const updatedAttributes = await payload.task.setAttributes(newAttributes);
 
-    const updatedAttributes = await payload.task.setAttributes(attributes);
- 
     taskCompletedAction(taskSid)
 }

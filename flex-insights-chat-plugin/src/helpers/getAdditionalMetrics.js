@@ -17,12 +17,22 @@ export const getAdditionalMetrics = async (payload, store) => {
     const workerName = state.flex.worker.attributes.contact_uri.split(":")[1];
     const token = state.flex.session.ssoTokenPayload.token;
 
+
+
     const response = await fetch(`${RUNTIMEDOMAIN}/get-channel-messages`, {
         headers: {
-            "Content-Type": "application/x-www-form-urlencoded"
+            "Content-Type": "application/json"
         },
         method: "POST",
-        body: `channelSid=${channelSid}&token=${token}&workerName=${workerName}&reservationAccepted=${reservationAcceptedTime}&configuredFeatures=${configuredFeatures}`
+        body: JSON.stringify({
+            channelSid: channelSid,
+            token: token,
+            workerName: workerName,
+            reservationAccepted: reservationAcceptedTime,
+            configuredFeatures: configuredFeatures
+        })
+
+       // body: `channelSid=${channelSid}&token=${token}&workerName=${workerName}&reservationAccepted=${reservationAcceptedTime}&configuredFeatures=${configuredFeatures}`
     });
     const messagesResponse = await response.json();
 
