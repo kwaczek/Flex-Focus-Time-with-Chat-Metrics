@@ -93,7 +93,9 @@ export const getMetrics = async (payload, store) => {
         const additionalMetrics = await getAdditionalMetrics(payload, store);
         return additionalMetrics
     } else {
-        console.log("Channel not allowed or additional features are disabled")
+        console.log("Flex Insights Plugin: The channel not allowed or additional features are disabled")
+        const additionalMetrics = {}
+        return additionalMetrics
     }
 }
 
